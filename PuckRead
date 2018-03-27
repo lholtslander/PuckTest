@@ -1,0 +1,1 @@
+setInterval(function(){Bluetooth.println(analogRead(28));},100)
