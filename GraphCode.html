@@ -34,6 +34,27 @@ dateWindow: [date_win_min, date_win_max],
 labels: ['Time', 'Pressure'],
 showRangeSelector: true
 });
+  var time = 0;
+var voltage = 0;
+var Coff = new Uint16Array(2);
+
+/*function readvoltage() {
+Coff[0] = analogread(29);
+Coff[1] = analogread(28);
+//Coff[0] is voltage and the other one is time 
+return Coff;
+}*/
+
+
+
+/*function dosomethingslow(){
+for (var i=1; i<=100; i ++);
+}*/
+
+function readvoltage(){
+voltage = analogRead(29);
+return voltage;
+}
 function onLine(v) {
 if(rec_flag) {
 var x = new Date(); // current time
