@@ -1,34 +1,40 @@
 /* Initial pressure transducer and generate I2C interface */
-setup({ scl : D2, sda: D1 });
+//setup({ scl : D2, sda: D1 });  
  
 /*
 MS5805_Addr  :  0x76,
 */
  
 /* Sent Reset Command */
-writeTo(0x76, 0x1E);
+//writeTo(0x76, 0x1E);
  
  
-/* Read the coefficients required for pressure calibration */
- 
+/* Read the voltages */
+var time = 0;
+var voltage = 0;
+
 var Coff = new Uint16Array(6);
- 
+function readFrom() {
+ time = analogRead(28);
+ voltage = analogRead(29);
+//setInterval(function(){Bluetooth.println(analogRead(29));},100)
+}
 function readcoeff() {
  
-  // Read cofficients values stored in EPROM of the device
+  /* Read cofficients values stored in EPROM of the device
   for(var i = 0; i < 6; i++)
   {
     writeTo(0x76, 0xA2 + (2 * i));
  
     var d = readFrom(0x76, 2);
      
-    // Convert the data
+     Convert the data
     Coff[i] = ((d[0] * 256) + d[1]);
   }
  
-  }
+  }*/
 
-readcoeff();
+//readcoeff();
  
 function dosomethingslow(){
 for (var i=1;i<=100;i++);
@@ -37,19 +43,19 @@ for (var i=1;i<=100;i++);
 function readpressure() {
  
 /* Set pressure with the OSR 8192 */
-writeTo(0x76, 0x4A);
+//writeTo(0x76, 0x4A);
 dosomethingslow();
  
-writeTo(0x76, 0x00);
+//writeTo(0x76, 0x00);
  
 var d = readFrom(0x76, 3);
 var ptemp = d[0]*65536+d[1]*256+d[2];
  
 /* Refresh temperature with the OSR = 256 */
-writeTo(0x76, 0x50);
-dosomethingslow();
+//writeTo(0x76, 0x50);
+//dosomethingslow();
    
-writeTo(0x76, 0x00);
+//writeTo(0x76, 0x00);
  
 var t = readFrom(0x76, 3);
 var temp=t[0]*65536+t[1]*256+t[2];
@@ -75,8 +81,5 @@ var sens = Coff[0] * 65536 + (Coff[2] * dT) / 128;
   console.log("Temperature: " + ctemp);
   */
 }
- 
- 
-
 
 // setInterval(function(){Bluetooth.println(readpressure().toFixed(3));} ,35);
