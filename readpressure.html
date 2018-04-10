@@ -1,0 +1,82 @@
+/* Initial pressure transducer and generate I2C interface */
+setup({ scl : D2, sda: D1 });
+ 
+/*
+MS5805_Addr  :  0x76,
+*/
+ 
+/* Sent Reset Command */
+writeTo(0x76, 0x1E);
+ 
+ 
+/* Read the coefficients required for pressure calibration */
+ 
+var Coff = new Uint16Array(6);
+ 
+function readcoeff() {
+ 
+  // Read cofficients values stored in EPROM of the device
+  for(var i = 0; i < 6; i++)
+  {
+    writeTo(0x76, 0xA2 + (2 * i));
+ 
+    var d = readFrom(0x76, 2);
+     
+    // Convert the data
+    Coff[i] = ((d[0] * 256) + d[1]);
+  }
+ 
+  }
+
+readcoeff();
+ 
+function dosomethingslow(){
+for (var i=1;i<=100;i++);
+}
+ 
+function readpressure() {
+ 
+/* Set pressure with the OSR 8192 */
+writeTo(0x76, 0x4A);
+dosomethingslow();
+ 
+writeTo(0x76, 0x00);
+ 
+var d = readFrom(0x76, 3);
+var ptemp = d[0]*65536+d[1]*256+d[2];
+ 
+/* Refresh temperature with the OSR = 256 */
+writeTo(0x76, 0x50);
+dosomethingslow();
+   
+writeTo(0x76, 0x00);
+ 
+var t = readFrom(0x76, 3);
+var temp=t[0]*65536+t[1]*256+t[2];
+ 
+  // Pressure and Temperature Calculations
+  // 1st order temperature and pressure compensation
+  // Difference between actual and reference temperature
+var dT = temp - ((Coff[4] * 256));
+var stemp = 2000 + (dT * (Coff[5] / 8388608 ));
+ 
+  // Offset and Sensitivity calculation
+var off = Coff[1] * 131072 + (Coff[3] * dT) / 64;
+var sens = Coff[0] * 65536 + (Coff[2] * dT) / 128;
+ 
+  // Convert the final data
+  ptemp = (ptemp * sens / 2097152 - off);
+  ptemp /= 32768;
+  var pressure = ptemp / 100.0;
+  return pressure;
+  /*
+  console.log("Pressure: " + pressure);
+  var ctemp = stemp / 100.0;
+  console.log("Temperature: " + ctemp);
+  */
+}
+ 
+ 
+
+
+// setInterval(function(){Bluetooth.println(readpressure().toFixed(3));} ,35);
