@@ -16,6 +16,6 @@ for (var i=1; i<=100; i ++);
 }*/
 
 function readvoltage(){
-voltage = analogread(29);
+voltage = analogRead(29);
 return voltage;
 }
